@@ -33,7 +33,7 @@
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--secondary-bg); display: flex; padding: 10px; border-top: 1px solid rgba(0,0,0,0.05); }
         .nav-btn { flex: 1; background: var(--button-color); color: var(--button-text); border: none; padding: 12px; border-radius: 12px; font-size: 14px; font-weight: 600; margin: 0 5px; cursor: pointer; }
         .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100; justify-content: center; align-items: center; padding: 20px; }
-        .modal-content { background: var(--bg-color); padding: 20px; border-radius: 16px; width: 100%; max-width: 320px; }
+        .modal-content { background: var(--bg-color); padding: 20px; border-radius: 166px; width: 100%; max-width: 320px; border-radius: 16px; }
         textarea { width: 100%; height: 100px; background: var(--secondary-bg); color: var(--text-color); border: 1px solid rgba(0,0,0,0.1); border-radius: 10px; padding: 10px; box-sizing: border-box; resize: none; font-family: inherit; }
         .close-btn { background: var(--secondary-bg); color: var(--text-color); border: none; width: 100%; padding: 10px; border-radius: 10px; margin-top: 10px; font-weight: 600; cursor: pointer; }
     </style>
@@ -50,15 +50,15 @@
         <div class="day-card" id="even-1"><div class="day-title">Понедельник</div><div class="schedule-text">1. Разговоры о важном (Климовская С.В., А221)
 2. Биология (Казюлина А.Ф., Л207)
 3. Физика (Селина И.В., Л301)
-4. Обществознание (Ганьба М.А., Т14)</div></div>
+4. Обществознание (Ганьба M.А., Т14)</div></div>
         <div class="day-card" id="even-2"><div class="day-title">Вторник</div><div class="schedule-text">1. Литература (Буданова Т.Ю., Л408)
 2. Математика (Чуракова Е.А., Л203)
 3. История (Марцыфей А.В., Т11)
-4. Информатика: 1 гр. (Короткевич Т.Н., А407) / 2 гр. (Банжура М.А., А414)</div></div>
-        <div class="day-card" id="even-3"><div class="day-title">Среда</div><div class="schedule-text">1. Иностранный язык: 1 гр. (Ровда Н.А., Л302) / 2 гр. (Гончакова М.М., Л407)
+4. Информатика: 1 гр. (Короткевич Т.Н., А407) / 2 гр. (Банжура M.А., А414)</div></div>
+        <div class="day-card" id="even-3"><div class="day-title">Среда</div><div class="schedule-text">1. Иностранный язык: 1 гр. (Ровда H.А., Л302) / 2 гр. (Гончакова M.M., Л407)
 2. Физ-ра (Ситничук Е.Н., Н/Б)
 3. Математика (Чуракова Е.А., Л203)
-4. Химия (Гурков Н.А., Т10)</div></div>
+4. Химия (Гурков H.А., Т10)</div></div>
         <div class="day-card" id="even-4"><div class="day-title">Четверг</div><div class="schedule-text">1. Физика (Селина И.В., Л301)
 2. ОБЗР (Фомичёв Ю.Г., Л201)</div></div>
         <div class="day-card" id="even-5"><div class="day-title">Пятница</div><div class="schedule-text">1. Математика (Чуракова Е.А., Л203)
@@ -72,23 +72,23 @@
         <div class="day-card" id="odd-1"><div class="day-title">Понедельник</div><div class="schedule-text">1. Разговоры о важном (Климовская С.В., А221)
 2. Математика (Чуракова Е.А., Л203)</div></div>
         <div class="day-card" id="odd-2"><div class="day-title">Вторник</div><div class="schedule-text">1. История (Марцыфей А.В., А312)
-2. Информатика: 1 гр. (Короткевич Т.Н., Л409а) / 2 гр. (Банжура М.А., А414)
+2. Информатика: 1 гр. (Короткевич Т.Н., Л409а) / 2 гр. (Банжура M.А., А414)
 3. Физ-ра (Ситничук Е.Н., Н/Б)
 4. Математика (Чуракова Е.А., Л203)</div></div>
-        <div class="day-card" id="odd-3"><div class="day-title">Среда</div><div class="schedule-text">1. Обществознание (Ганьба М.А., Т14)
+        <div class="day-card" id="odd-3"><div class="day-title">Среда</div><div class="schedule-text">1. Обществознание (Ганьба M.А., Т14)
 2. История (Марцыфей А.В., Т11)
 3. Физика (Селина И.В., Л301)
-4. Основы проектной деятельности (Ацепаева М.Б., Л401)</div></div>
+4. Основы проектной деятельности (Ацепаева M.Б., Л401)</div></div>
         <div class="day-card" id="odd-4"><div class="day-title">Четверг</div><div class="schedule-text">1. Окно
 2. География (Горбань Т.П., Л401)
-3. Иностранный язык: 1 гр. (Ровда Н.А., Л302) / 2 гр. (Гончакова М.М., Л407)
+3. Иностранный язык: 1 гр. (Ровда H.А., Л302) / 2 гр. (Гончакова M.M., Л407)
 4. ОБЗР (Фомичёв Ю.Г., Л201)</div></div>
         <div class="day-card" id="odd-5"><div class="day-title">Пятница</div><div class="schedule-text">1. Литература (Буданова Т.Ю., Л401)
 2. Биология (Казюлина А.Ф., Л504)
 3. Математика (Чуракова Е.А., Л203)
-4. Информатика: 1 гр. (Короткевич Т.Н., Л404) / 2 гр. (Банжура М.А., Л414)</div></div>
+4. Информатика: 1 гр. (Короткевич Т.Н., Л404) / 2 гр. (Банжура M.А., Л414)</div></div>
         <div class="day-card" id="odd-6"><div class="day-title">Суббота</div><div class="schedule-text">1. Физика (Селина И.В., Л301)
-2. Химия (Гурков Н.А., Т10)</div></div>
+2. Химия (Гурков H.А., Т10)</div></div>
     </div>
 
     <div id="session" class="tab-content">
@@ -112,11 +112,11 @@
 
 🗓 <b>26 июня (Пятница)</b>
 ⏰ 13:20–14:50 — Информатика (консультация)
-👤 Банжура М.А. (А414) / Короткевич Т.Н. (Л409а)
+👤 Банжура M.А. (А414) / Короткевич Т.Н. (Л409а)
 
 🗓 <b>27 июня (Суббота)</b>
 ⏰ 11:20–14:50 — Информатика (экзамен)
-👤 Банжура М.А. (А414) / Короткевич Т.Н. (Л409а)</div>
+👤 Банжура M.А. (А414) / Короткевич Т.Н. (Л409а)</div>
         </div>
     </div>
 
@@ -149,13 +149,9 @@
     </div>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand();
-
         function switchTab(tabId) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+            document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('active'); });
             
             if(tabId === 'even') document.getElementById('tab-even').classList.add('active');
             if(tabId === 'odd') document.getElementById('tab-odd').classList.add('active');
@@ -168,31 +164,38 @@
         function closeModal(e, id) { if(e.target === document.getElementById(id)) document.getElementById(id).style.display = 'none'; }
 
         function sendSupport() {
-            const text = document.getElementById('support-text').value.trim();
+            var text = document.getElementById('support-text').value.trim();
             if(!text) return;
-            tg.sendData("SUPPORT_MSG:" + text);
-            tg.close();
+            if(window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.sendData("SUPPORT_MSG:" + text);
+                window.Telegram.WebApp.close();
+            }
         }
 
         function highlightToday() {
-            const now = new Date();
-            const dayOfWeek = now.getDay();
-            const startOfYear = new Date(now.getFullYear(), 0, 1);
-            const pastDaysOfYear = (now - startOfYear) / 86400000;
-            const weekNum = Math.ceil((pastDaysOfYear + startOfYear.getDay() + 1) / 7);
-            const isEven = weekNum % 2 === 0;
+            var now = new Date();
+            var dayOfWeek = now.getDay();
+            var startOfYear = new Date(now.getFullYear(), 0, 1);
+            var pastDaysOfYear = (now - startOfYear) / 86400000;
+            var weekNum = Math.ceil((pastDaysOfYear + startOfYear.getDay() + 1) / 7);
+            var isEven = weekNum % 2 === 0;
 
             if (dayOfWeek >= 1 && dayOfWeek <= 6) {
                 if (isEven) {
                     switchTab('even');
-                    const card = document.getElementById(`even-${dayOfWeek}`);
+                    var card = document.getElementById('even-' + dayOfWeek);
                     if(card) card.classList.add('today');
                 } else {
                     switchTab('odd');
-                    const card = document.getElementById(`odd-${dayOfWeek}`);
+                    var card = document.getElementById('odd-' + dayOfWeek);
                     if(card) card.classList.add('today');
                 }
             }
+        }
+        
+        if(window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.ready();
+            window.Telegram.WebApp.expand();
         }
         highlightToday();
     </script>
