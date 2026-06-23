@@ -1,0 +1,374 @@
+import os
+from threading import Thread
+from http.server import SimpleHTTPRequestHandler, HTTPServer
+
+# Запускаем пустышку-сервер для обмана Render
+def run_dummy_server():
+    port = int(os.environ.get("PORT", 10000))
+    server = HTTPServer(("0.0.0.0", port), SimpleHTTPRequestHandler)
+    server.serve_forever()
+
+Thread(target=run_dummy_server, daemon=True).start()
+
+import asyncio
+import datetime
+from supabase import create_client, Client
+from aiogram import Bot, Dispatcher, F
+from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, WebAppInfo
+from aiogram.filters import Command
+
+# Токен твоего бота и настройки
+TOKEN = "8624680719:AAF_nyLGqJbRIKFercDUbvVuhjtS9ovxmWE"
+ADMIN_ID = 1433315827
+
+# Защита от пустых переменных окружения
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "").strip()
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "").strip()
+
+# Инициализируем клиент Supabase через HTTP
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+# ССЫЛКА НА ТВОЙ МИНИ-САЙТ (Вставь сюда свою ссылку из GitHub Pages!)
+URL_MINI_APP = "https://твой-логин.github.io/timetable/"
+
+bot = Bot(token=TOKEN)
+dp = Dispatcher()
+user_states = {}
+
+# --- Клавиатуры ---
+
+# Функция для генерации меню (динамически добавляет кнопки админу)
+def get_main_keyboard(user_id: int):
+    buttons = [
+        # Новая кнопка для открытия мини-приложения
+        [KeyboardButton(text="📱 Открыть Mini App (Сайт)", web_app=WebAppInfo(url=URL_MINI_APP))],
+        [KeyboardButton(text="📅 Смотреть расписание в чате")],
+        [KeyboardButton(text="🔔 Время звонков"), KeyboardButton(text="🆘 Поддержка")], 
+        [KeyboardButton(text="🎓 Сессия")]
+    ]
+    # Если это ты, добавляем админ-блок кнопок в конец
+    if user_id == ADMIN_ID:
+        buttons.append([KeyboardButton(text="👑 АДМИН: Рассылка текста"), KeyboardButton(text="👑 АДМИН: Рассылка фото")])
+        buttons.append([KeyboardButton(text="👑 АДМИН: Выгрузить БД (txt)")])
+        
+    return ReplyKeyboardMarkup(keyboard=buttons, resize_keyboard=True)
+
+schedule_kb = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="⬇️ На сегодня"), KeyboardButton(text="➡️ На завтра")],
+        [KeyboardButton(text="📅 На всю неделю"), KeyboardButton(text="⬅️ На следующую неделю")],
+        [KeyboardButton(text="⬅️ Назад")]
+    ],
+    resize_keyboard=True
+)
+
+# Кнопка отмены для обычных юзеров и админа
+cancel_kb = ReplyKeyboardMarkup(
+    keyboard=[[KeyboardButton(text="❌ Отменить отправку")]],
+    resize_keyboard=True
+)
+
+# Словари с днями недели для перевода
+DAYS_RU = {0: "Понедельник", 1: "Вторник", 2: "Среда", 3: "Четверг", 4: "Пятница", 5: "Суббота", 6: "Воскресенье"}
+
+# Расписание звонков
+BELLS_SCHEDULE = (
+    "🔔 **Расписание звонков:**\n\n"
+    "1️⃣ пара: 08:00 — 09:30\n"
+    "2️⃣ пара: 09:40 — 11:20\n"
+    "3️⃣ пара: 11:30 — 12:50\n"
+    "4️⃣ пара: 13:20 — 14:50"
+)
+
+# База данных расписания
+SCHEDULE = {
+    "четная": {
+        "Понедельник": "1. Разговоры о важном (Климовская С.В., А221)\n2. Biология (Казюлина А.Ф., Л207)\n3. Физика (Селина И.В., Л301)\n4. Обществознание (Ганьба М.А., Т14)",
+        "Вторник": "1. Литература (Буданова Т.Ю., Л408)\n2. Математика (Чуракова Е.А., Л203)\n3. История (Марцыфей А.В., Т11)\n4. Информатика: 1 гр. (Короткевич Т.Н., А407) / 2 гр. (Банжура М.А., А414)",
+        "Среда": "1. Иностранный язык: 1 гр. (Ровда Н.А., Л302) / 2 гр. (Гончакова М.М., Л407)\n2. Физ-ра (Ситничук Е.Н., Н/Б)\n3. Математика (Чуракова Е.А., Л203)\n4. Химия (Гурков Н.А., Т10)",
+        "Четверг": "1. Физика (Селина И.В., Л301)\n2. ОБЗР (Фомичёв Ю.Г., Л201)",
+        "Пятница": "1. Математика (Чуракова Е.А., Л203)\n2. История (Марцыфей А.В., Т14)\n3. Русский язык (Борисова Л.В., Л408)",
+        "Суббота": "1. Литература (Буданова Т.Ю., Л408)\n2. Математика (Чуракова Е.А., Л203)",
+        "Воскресенье": "🎉 Выходной день!"
+    },
+    "нечетная": {
+        "Понедельник": "1. Разговоры о важном (Климовская С.В., А221)\n2. Математика (Чуракова Е.А., Л203)",
+        "Вторник": "1. История (Марцыфей А.В., А312)\n2. Информатика: 1 гр. (Короткевич Т.Н., Л409а) / 2 гр. (Банжура М.А., А414)\n3. Физ-ра (Ситничук Е.Н., Н/Б)\n4. Математика (Чуракова Е.А., Л203)",
+        "Среда": "1. Обществознание (Ганьба М.А., Т14)\n2. История (Марцыфей А.В., Т11)\n3. Физика (Селина И.В., Л301)\n4. Основы проектной деятельности (Ацепаева М.Б., Л401)",
+        "Четверг": "1. Окно\n2. География (Горбань Т.П., Л401)\n3. Иностранный язык: 1 гр. (Ровда Н.А., Л302) / 2 гр. (Гончакова М.М., Л407)\n4. ОБЗР (Фомичёв Ю.Г., Л201)",
+        "Пятница": "1. Литература (Буданова Т.Ю., Л401)\n2. Биология (Казюлина А.Ф., Л504)\n3. Математика (Чуракова Е.А., Л203)\n4. Информатика: 1 гр. (Короткевич Т.Н., Л404) / 2 гр. (Банжура М.А., Л414)",
+        "Суббота": "1. Физика (Селина И.В., Л301)\n2. Химия (Гурков Н.А., Т10)",
+        "Воскресенье": "🎉 Выходной день!"
+    }
+}
+
+def get_day_info(delta_days=0):
+    target_date = datetime.date.today() + datetime.timedelta(days=delta_days)
+    week_num = target_date.isocalendar()[1]
+    week_type = "четная" if week_num % 2 == 0 else "нечетная"
+    day_name = DAYS_RU[target_date.weekday()]
+    return week_type, day_name, target_date.strftime("%d.%m.%Y")
+
+# --- Логика Администратора (Кнопки) ---
+
+@dp.message(F.text == "👑 АДМИН: Выгрузить БД (txt)")
+@dp.message(Command("get_users"))
+async def admin_get_db(message: Message):
+    if message.from_user.id != ADMIN_ID:
+        return
+    try:
+        response = supabase.table("users").select("user_id").execute()
+        rows = response.data
+        if not rows:
+            await message.reply("📂 База данных пуста.")
+            return
+            
+        with open("temp_users.txt", "w") as f:
+            for row in rows:
+                f.write(f"{row['user_id']}\n")
+                
+        from aiogram.types import FSInputFile
+        document = FSInputFile("temp_users.txt")
+        await message.reply_document(document, caption=f"📂 Всего пользователей в БД: {len(rows)}")
+        os.remove("temp_users.txt")
+    except Exception as e:
+        await message.reply(f"❌ Ошибка при выгрузке: {e}")
+
+@dp.message(F.text == "👑 АДМИН: Рассылка текста")
+async def start_text_broadcast(message: Message):
+    if message.from_user.id != ADMIN_ID:
+        return
+    user_states[ADMIN_ID] = "waiting_for_broadcast_text"
+    await message.answer("📝 **Введите текст для рассылки всей группе:**\n\nБот оформит его как официальное объявление от старосты.", reply_markup=cancel_kb, parse_mode="Markdown")
+
+@dp.message(F.text == "👑 АДМИН: Рассылка фото")
+async def start_photo_broadcast(message: Message):
+    if message.from_user.id != ADMIN_ID:
+        return
+    user_states[ADMIN_ID] = "waiting_for_broadcast_photo"
+    await message.answer("🖼 **Отправьте СЛЕДУЮЩИМ сообщением ФОТОГРАФИЮ изменений:**\n\nБот автоматически разошлет её всем пользователям.", reply_markup=cancel_kb, parse_mode="Markdown")
+
+# Перехват текста рассылки
+@dp.message(lambda msg: user_states.get(msg.from_user.id) == "waiting_for_broadcast_text")
+async def process_text_broadcast(message: Message):
+    if message.from_user.id != ADMIN_ID: return
+    
+    if message.text == "❌ Отменить отправку":
+        user_states[ADMIN_ID] = None
+        await cmd_back(message)
+        return
+    
+    formatted_msg = f"📢 **Важное объявление от администратора (старосты):**\n\n{message.text}"
+    user_states[ADMIN_ID] = None
+    
+    try:
+        response = supabase.table("users").select("user_id").execute()
+        rows = response.data
+        success_count = 0
+        for row in rows:
+            try:
+                await message.bot.send_message(chat_id=row['user_id'], text=formatted_msg, parse_mode="Markdown")
+                success_count += 1
+            except Exception: pass
+        await message.reply(f"✅ Текстовая рассылка завершена: {success_count} из {len(rows)}", reply_markup=get_main_keyboard(ADMIN_ID))
+    except Exception as e:
+        await message.reply(f"❌ Ошибка базы данных: {e}", reply_markup=get_main_keyboard(ADMIN_ID))
+
+# Перехват фото рассылки
+@dp.message(lambda msg: user_states.get(msg.from_user.id) == "waiting_for_broadcast_photo")
+async def process_photo_broadcast(message: Message):
+    if message.from_user.id != ADMIN_ID: return
+    
+    if message.text == "❌ Отменить отправку":
+        user_states[ADMIN_ID] = None
+        await cmd_back(message)
+        return
+    
+    if not message.photo:
+        await message.reply("⚠️ Это не фотография! Отправьте именно картинку или нажмите отмену.")
+        return
+        
+    caption_text = "🔔 Изменения в расписании!"
+    user_states[ADMIN_ID] = None
+    
+    try:
+        response = supabase.table("users").select("user_id").execute()
+        rows = response.data
+        success_count = 0
+        for row in rows:
+            try:
+                await message.bot.send_photo(chat_id=row['user_id'], photo=message.photo[-1].file_id, caption=caption_text)
+                success_count += 1
+            except Exception: pass
+        await message.reply(f"✅ Рассылка фото завершена: {success_count} из {len(rows)}", reply_markup=get_main_keyboard(ADMIN_ID))
+    except Exception as e:
+        await message.reply(f"❌ Ошибка базы данных: {e}", reply_markup=get_main_keyboard(ADMIN_ID))
+
+# --- Логика получения данных из Mini App (Поддержка на сайте) ---
+@dp.message(F.web_app_data)
+async def handle_web_app_data(message: Message):
+    data = message.web_app_data.data
+    # Если прилетело сообщение из техподдержки сайта
+    if data.startswith("SUPPORT_MSG:"):
+        support_text = data.replace("SUPPORT_MSG:", "")
+        
+        user_info = f"👤 От: {message.from_user.full_name} (ID: {message.from_user.id}) [Через Mini App]"
+        if message.from_user.username:
+            user_info += f" | @{message.from_user.username}"
+
+        admin_text = f"📩 **Новое сообщение в поддержку!**\n\n{user_info}\n💬 Текст:\n_{support_text}_"
+        reply_inline_kb = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="✍️ Ответить", callback_data=f"reply_to_{message.from_user.id}")]
+        ])
+        
+        try:
+            await message.bot.send_message(chat_id=ADMIN_ID, text=admin_text, parse_mode="Markdown", reply_markup=reply_inline_kb)
+            await message.reply("✅ Твое сообщение успешно отправлено администратору через приложение!", reply_markup=get_main_keyboard(message.from_user.id))
+        except Exception:
+            await message.reply("❌ Не удалось отправить сообщение.", reply_markup=get_main_keyboard(message.from_user.id))
+
+# --- Базовые команды ---
+
+@dp.message(Command("start"))
+async def cmd_start(message: Message):
+    uid = message.from_user.id
+    user_states[uid] = None
+    try:
+        res = supabase.table("users").select("user_id").eq("user_id", uid).execute()
+        if not res.data:
+            supabase.table("users").insert({"user_id": uid}).execute()
+    except Exception as e:
+        print(f"Ошибка записи в БД через HTTP: {e}")
+
+    await message.answer(
+        f"👋 Привет! Я бот-расписание для группы **ЭПСл.9-25-1.**\nВыбери нужный пункт меню ниже 👇\nТы можешь использовать как обычные текстовые кнопки, так и открыть полноценное веб-приложение!",
+        reply_markup=get_main_keyboard(uid),
+        parse_mode="Markdown"
+    )
+
+@dp.message(F.text == "⬅️ Назад")
+@dp.message(F.text == "❌ Отменить отправку")
+async def cmd_back(message: Message):
+    uid = message.from_user.id
+    user_states[uid] = None
+    await message.answer("Действие отменено. Главное меню:", reply_markup=get_main_keyboard(uid))
+
+@dp.message(F.text == "📅 Смотреть расписание в чате")
+async def show_schedule_menu(message: Message):
+    user_states[message.from_user.id] = None
+    await message.answer("Выбери период расписания для вывода сообщением:", reply_markup=schedule_kb)
+
+@dp.message(F.text == "🔔 Время звонков")
+async def show_bells(message: Message):
+    user_states[message.from_user.id] = None
+    await message.answer(BELLS_SCHEDULE, reply_markup=get_main_keyboard(message.from_user.id), parse_mode="Markdown")
+
+@dp.message(F.text == "🆘 Поддержка")
+async def start_support(message: Message):
+    user_states[message.from_user.id] = "waiting_for_support_msg"
+    await message.answer(
+        "📝 **Напиши своё сообщение для администратора.**\n\nЕсли передумал — нажми кнопку отмены ниже.",
+        reply_markup=cancel_kb,
+        parse_mode="Markdown"
+    )
+
+# Обработка ввода сообщения в поддержку через чат
+@dp.message(lambda msg: user_states.get(msg.from_user.id) == "waiting_for_support_msg")
+async def forward_to_admin(message: Message):
+    if message.text in ["📅 Смотреть расписание в чате", "🔔 Время звонков", "🆘 Поддержка", "🎓 Сессия", "⬅️ Назад", "⬇️ На сегодня", "➡️ На завтра", "📅 На всю неделю", "⬅️ На следующую неделю"]:
+        user_states[message.from_user.id] = None
+        if message.text == "📅 Смотреть расписание в чате": await show_schedule_menu(message)
+        elif message.text == "🔔 Время звонков": await show_bells(message)
+        elif message.text == "🆘 Поддержка": await start_support(message)
+        elif message.text == "🎓 Сессия": await show_session_schedule(message)
+        return
+
+    user_info = f"👤 От: {message.from_user.full_name} (ID: {message.from_user.id}) [Через чат]"
+    if message.from_user.username:
+        user_info += f" | @{message.from_user.username}"
+
+    admin_text = f"📩 **Новое сообщение в поддержку!**\n\n{user_info}\n💬 Текст:\n_{message.text}_"
+    reply_inline_kb = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="✍️ Ответить", callback_data=f"reply_to_{message.from_user.id}")]
+    ])
+
+    try:
+        await message.bot.send_message(chat_id=ADMIN_ID, text=admin_text, parse_mode="Markdown", reply_markup=reply_inline_kb)
+        await message.reply("✅ Твое сообщение успешно отправлено администратору!", reply_markup=get_main_keyboard(message.from_user.id))
+    except Exception:
+        await message.reply("❌ Не удалось отправить сообщение.", reply_markup=get_main_keyboard(message.from_user.id))
+    
+    user_states[message.from_user.id] = None
+
+@dp.callback_query(F.data.startswith("reply_to_"))
+async def handle_reply_callback(callback: CallbackQuery):
+    if callback.from_user.id != ADMIN_ID:
+        await callback.answer("Вы не являетесь администратором!", show_alert=True)
+        return
+    target_user_id = callback.data.split("_")[2]
+    user_states[ADMIN_ID] = f"replying_to_{target_user_id}"
+    await callback.message.answer(f"⏳ Напиши ответ для пользователя (ID: {target_user_id}).")
+    await callback.answer()
+
+@dp.message(lambda msg: isinstance(user_states.get(msg.from_user.id), str) and user_states.get(msg.from_user.id).startswith("replying_to_"))
+async def send_reply_to_user(message: Message):
+    if message.from_user.id != ADMIN_ID: return
+    target_user_id = int(user_states[ADMIN_ID].split("_")[2])
+    user_text = f"✉️ **Ответ от администратора:**\n\n{message.text}"
+    try:
+        await message.bot.send_message(chat_id=target_user_id, text=user_text, parse_mode="Markdown")
+        await message.reply("✅ Ответ успешно доставлен!")
+    except Exception as e:
+        await message.reply(f"❌ Ошибка доставки: {e}")
+    user_states[ADMIN_ID] = None
+
+# --- Обработчики расписания ---
+
+@dp.message(F.text == "⬇️ На сегодня")
+async def schedule_today(message: Message):
+    week_type, day_name, date_str = get_day_info(delta_days=0)
+    day_schedule = SCHEDULE[week_type].get(day_name, "Нет данных")
+    await message.answer(f"📅 Сегодня: {day_name} ({date_str})\n🔄 Неделя: {week_type}\n\n{day_schedule}", parse_mode="Markdown")
+
+@dp.message(F.text == "➡️ На завтра")
+async def schedule_tomorrow(message: Message):
+    week_type, day_name, date_str = get_day_info(delta_days=1)
+    day_schedule = SCHEDULE[week_type].get(day_name, "Нет данных")
+    await message.answer(f"📅 **Завтра: {day_name} ({date_str})**\n🔄 Неделя: {week_type}\n\n{day_schedule}", parse_mode="Markdown")
+
+@dp.message(F.text == "📅 На всю неделю")
+async def schedule_week(message: Message):
+    week_type, _, _ = get_day_info(delta_days=0)
+    response = f"📋 **Расписание на ТЕКУЩУЮ неделю ({week_type.upper()}):**\n\n"
+    for day, text in SCHEDULE[week_type].items():
+        response += f"🔹 **{day}**:\n{text}\n\n"
+    await message.answer(response, parse_mode="Markdown")
+
+@dp.message(F.text == "⬅️ На следующую неделю")
+async def schedule_next_week(message: Message):
+    current_week_type, _, _ = get_day_info(delta_days=0)
+    next_week_type = "нечетная" if current_week_type == "четная" else "четная"
+    response = f"📋 **Расписание на СЛЕДУЮЩУЮ неделю ({next_week_type.upper()}):**\n\n"
+    for day, text in SCHEDULE[next_week_type].items():
+        response += f"🔹 **{day}**:\n{text}\n\n"
+    await message.answer(response, parse_mode="Markdown")
+
+@dp.message(F.text.contains("Сессия"))
+async def show_session_schedule(message: Message):
+    session_text = (
+        "📝 **РАСПИСАНИЕ СЕССИИ (Группа ЭПСл.9-25-1)**\n\n"
+        "🗓 **22 июня (Понедельник)**\n⏰ 8:00–9:30 — Математика (консультация)\n👤 Чуракова Е.А. | 🚪 Ауд. Л203\n\n"
+        "🗓 **23 июня (Вторник)**\n⏰ 8:00–11:10 — Математика (экзамен)\n👤 Чуракова Е.А. | 🚪 Ауд. Л203\n\n"
+        "🗓 **24 июня (Среда)**\n⏰ 8:00–11:10 — Русский язык (экзамен)\n👤 Борисова Л.В. | 🚪 Ауд. Л408\n\n"
+        "🗓 **25 июня (Четверг)**\n⏰ 9:40–12:50 — Физика (экзамен)\n👤 Селина И.В. | 🚪 Ауд. Л301\n\n"
+        "🗓 **26 июня (Пятница)**\n⏰ 13:20–14:50 — Информатика (консультация)\n👤 Банжура М.А. (А414) / Короткевич Т.Н. (Л409а)\n\n"
+        "🗓 **27 июня (Суббота)**\n⏰ 11:20–14:50 — Информатика (экзамен)\n👤 Банжура М.А. (А414) / Короткевич Т.Н. (Л409а)"
+    )
+    await message.reply(session_text, parse_mode="Markdown")
+
+async def main():
+    print("Бот запускается в гибридном режиме (Чат + Mini App)...")
+    await dp.start_polling(bot)
+
+if __name__ == "__main__":
+    asyncio.run(main())
