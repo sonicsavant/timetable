@@ -314,6 +314,7 @@
         </div>
     </div>
 
+    <!-- ================= ЧЕТНАЯ НЕДЕЛЯ ================= -->
     <div id="even" class="tab-content active">
         <div class="day-header" id="h-even-1">Понедельник</div>
         <div class="ios-list" id="even-1">
@@ -359,6 +360,7 @@
         </div>
     </div>
 
+    <!-- ================= NEЧЕТНАЯ НЕДЕЛЯ ================= -->
     <div id="odd" class="tab-content">
         <div class="day-header" id="h-odd-1">Понедельник</div>
         <div class="ios-list" id="odd-1">
@@ -405,6 +407,7 @@
         </div>
     </div>
 
+    <!-- ================= СЕССИЯ ================= -->
     <div id="session" class="tab-content">
         <div class="day-header">Расписание экзаменов (ЭПСл.9-25-1)</div>
         <div class="ios-list">
@@ -417,11 +420,13 @@
         </div>
     </div>
 
+    <!-- НИЖНИЙ БАР С КНОПКАМИ -->
     <div class="bottom-bar">
         <button class="bar-button" onclick="openModal('bells-modal')">🔔 Звонки</button>
         <button class="bar-button" onclick="openModal('support-modal')">🆘 Поддержка</button>
     </div>
 
+    <!-- МАКЕТ ОКНА ЗВОНКОВ (APPLE STYLE ALERT) -->
     <div id="bells-modal" class="modal-overlay" onclick="closeModal(event, 'bells-modal')">
         <div class="ios-alert">
             <div class="alert-body">
@@ -440,6 +445,7 @@
         </div>
     </div>
 
+    <!-- МАКЕТ ОКНА ПОДДЕРЖКИ (APPLE STYLE ALERT) -->
     <div id="support-modal" class="modal-overlay" onclick="closeModal(event, 'support-modal')">
         <div class="ios-alert">
             <div class="alert-body">
