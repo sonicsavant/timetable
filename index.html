@@ -85,7 +85,7 @@
         }
         .tabs { display: flex; background: rgba(120, 120, 128, 0.12); padding: 2px; border-radius: 99px; }
         .tab { flex: 1; text-align: center; padding: 8px 4px; font-size: 13px; font-weight: 500; border-radius: 99px; cursor: pointer; color: var(--ios-text); }
-        .tab.active { background: var(--ios-card); box-shadow: 0 3px 8px rgba(0,0,0,0.12); font-weight: 600; }
+        .tab:active { background: var(--ios-card); box-shadow: 0 3px 8px rgba(0,0,0,0.12); font-weight: 600; }
 
         .back-button {
             color: var(--ios-blue); font-size: 17px; display: flex; align-items: center; gap: 4px;
@@ -125,8 +125,9 @@
         .alert-btn.cancel { color: #ff3b30; border-right: 0.5px solid var(--ios-border); }
         
         .info-notice {
-            padding: 20px; text-align: center; color: var(--ios-secondary-text); font-size: 15px; line-height: 1.4;
+            padding: 25px 20px; text-align: center; color: var(--ios-text); font-size: 16px; line-height: 1.5;
         }
+        .info-notice span { display: block; font-size: 28px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -147,27 +148,26 @@
             <span class="search-icon">🔍</span>
             <input type="text" class="search-input" id="search" placeholder="Поиск группы (например: ЭПСл)" oninput="filterGroups()">
         </div>
-        <div class="ios-list" id="groups-container">
-            </div>
+        <div class="ios-list" id="groups-container"></div>
     </div>
 
     <div id="screen-timetable" class="screen">
         <button class="back-button" onclick="navigateTo('screen-groups')"><i>◀</i> Группы</button>
         <h2 class="title" id="current-group-title" style="margin-bottom: 2px;">Группа</h2>
-        <p class="subtitle" style="margin-bottom: 20px;">Выберите день для вывода в чат:</p>
+        <p class="subtitle" style="margin-bottom: 20px;">Кликните нужный день:</p>
 
         <div class="tabs-container">
             <div class="tabs">
-                <div class="tab" onclick="requestSchedule('yesterday')">Вчера</div>
-                <div class="tab" onclick="requestSchedule('today')">Сегодня</div>
-                <div class="tab" onclick="requestSchedule('tomorrow')">Завтра</div>
+                <div class="tab" id="btn-yesterday" onclick="requestSchedule('yesterday', this)">Вчера</div>
+                <div class="tab" id="btn-today" onclick="requestSchedule('today', this)">Сегодня</div>
+                <div class="tab" id="btn-tomorrow" onclick="requestSchedule('tomorrow', this)">Завтра</div>
             </div>
         </div>
 
         <div class="ios-list">
-            <div class="info-notice">
-                Нажмите на нужный день выше 👆<br>
-                Бот мгновенно скачает актуальные пары с официального сайта КрИЖТ и пришлет их вам в чат!
+            <div class="info-notice" id="status-text">
+                <span>⚡</span>
+                Нажмите кнопку дня выше. Пары прилетят сообщением в чат бота КрИЖТ!
             </div>
         </div>
 
@@ -181,7 +181,6 @@
         <div class="ios-alert">
             <div class="alert-body">
                 <h3 class="alert-title">🔔 Время звонков</h3>
-                <p class="alert-subtitle">Расписание учебных пар</p>
                 <div style="font-size:14px; text-align:left; line-height:1.6; color: var(--ios-text);">
                     <b>1️⃣ пара:</b> 08:00 — 09:30<br>
                     <b>2️⃣ пара:</b> 09:40 — 11:20<br>
@@ -199,8 +198,7 @@
         <div class="ios-alert">
             <div class="alert-body">
                 <h3 class="alert-title">🆘 Поддержка</h3>
-                <p class="alert-subtitle">Сообщение улетит старосте</p>
-                <textarea id="support-text" class="ios-textarea" placeholder="Введите ваше сообщение..."></textarea>
+                <textarea id="support-text" class="ios-textarea" placeholder="Введите сообщение старосте..."></textarea>
             </div>
             <div class="alert-buttons">
                 <button class="alert-btn cancel" onclick="document.getElementById('support-modal').style.display='none'">Отмена</button>
@@ -210,7 +208,7 @@
     </div>
 
     <script>
-        // ПОЛНЫЙ список актуальных групп техникума КрИЖТ
+        // Полный список всех групп КрИЖТ
         const groups = [
             'ЭПСл.9-25-1', 'ATM.9-23-1', 'ATM.9-24-1', 'ATM.9-24-2', 
             'ATM.9-25-1', 'ATM.9-25-2', 'Д.11-24-6', 'Д.11-24-7', 
@@ -224,13 +222,16 @@
         function navigateTo(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
+            // Сбрасываем старые активные вкладки дней
+            document.querySelectorAll('.tab').forEach(t => t.removeAttribute('style'));
+            document.getElementById('status-text').innerHTML = "<span>⚡</span> Нажмите кнопку дня выше. Пары прилетят сообщением в чат бота КрИЖТ!";
         }
 
         function initGroups() {
             const container = document.getElementById('groups-container');
             container.innerHTML = groups.sort().map(g => `
                 <div class="ios-item" onclick="selectGroup('${g}')">
-                    <span class="group-name">${g}(К,О)</span>
+                    <span class="group-name">${g}</span>
                     <div class="ios-chevron"></div>
                 </div>
             `).join('');
@@ -246,17 +247,24 @@
 
         function selectGroup(groupName) {
             selectedGroup = groupName;
-            document.getElementById('current-group-title').textContent = groupName + "(К,О)";
+            document.getElementById('current-group-title').textContent = groupName;
             navigateTo('screen-timetable');
         }
 
-        // КЛЮЧЕВАЯ ФУНКЦИЯ: Передает боту точный приказ спарсить сайт ИрГУПС
-        function requestSchedule(day) {
+        function requestSchedule(day, element) {
             if(!selectedGroup) return;
+            
+            // Визуально подсвечиваем нажатую кнопку
+            document.querySelectorAll('.tab').forEach(t => t.removeAttribute('style'));
+            element.style.background = "var(--ios-card)";
+            element.style.boxShadow = "0 3px 8px rgba(0,0,0,0.12)";
+            element.style.fontWeight = "600";
+
+            document.getElementById('status-text').innerHTML = "<span>⏳</span> Запрос отправлен боту! Проверьте чат с ботом.";
+
             if(window.Telegram && window.Telegram.WebApp) {
-                // Передаем строку типа "GET_SPO_SCHEDULE:ЭПСл.9-25-1:today"
+                // Передаем правильную строку через двоеточие
                 window.Telegram.WebApp.sendData("GET_SPO_SCHEDULE:" + selectedGroup + ":" + day);
-                window.Telegram.WebApp.close();
             }
         }
 
@@ -268,7 +276,7 @@
             if(!text) return;
             if(window.Telegram && window.Telegram.WebApp) {
                 window.Telegram.WebApp.sendData("SUPPORT_MSG:" + text);
-                window.Telegram.WebApp.close();
+                document.getElementById('support-modal').style.display = 'none';
             }
         }
 
