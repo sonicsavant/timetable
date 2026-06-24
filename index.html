@@ -16,7 +16,6 @@
             --search-bg: rgba(118, 118, 128, 0.12);
         }
 
-        /* Автоматическая темная тема iOS / Telegram Premium */
         @media (prefers-color-scheme: dark) {
             :root {
                 --ios-bg: #000000;
@@ -30,7 +29,7 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", sans-serif;
             background-color: var(--ios-bg);
             color: var(--ios-text);
             margin: 0;
@@ -39,56 +38,29 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Управление экранами */
         .screen { display: none; }
         .screen.active { display: block; }
 
-        .header {
-            text-align: center;
-            margin: 40px 0 30px 0;
-        }
+        .header { text-align: center; margin: 40px 0 30px 0; }
         .logo-placeholder {
-            width: 80px;
-            height: 80px;
-            background: #107c41;
-            border-radius: 22px;
-            margin: 0 auto 16px auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 700;
-            font-size: 14px;
-            text-align: center;
+            width: 80px; height: 80px; background: #107c41; border-radius: 22px;
+            margin: 0 auto 16px auto; display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: 700; font-size: 14px; text-align: center;
             box-shadow: 0 8px 24px rgba(16, 124, 65, 0.2);
         }
         .title { font-size: 24px; font-weight: 700; margin: 0 0 4px 0; }
         .subtitle { font-size: 14px; color: var(--ios-secondary-text); margin: 0; }
 
-        /* Большие iOS кнопки (Выбор Роли) */
         .ios-btn-large {
-            background: var(--ios-blue);
-            color: white;
-            border: none;
-            width: 100%;
-            padding: 16px;
-            border-radius: 14px;
-            font-size: 17px;
-            font-weight: 600;
-            margin-bottom: 12px;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.15);
-            transition: opacity 0.1s ease;
+            background: var(--ios-blue); color: white; border: none; width: 100%;
+            padding: 16px; border-radius: 14px; font-size: 17px; font-weight: 600;
+            margin-bottom: 12px; cursor: pointer; transition: opacity 0.1s ease;
         }
         .ios-btn-large.secondary {
-            background: var(--ios-card);
-            color: var(--ios-blue);
-            box-shadow: none;
-            border: 1px solid var(--ios-border);
+            background: var(--ios-card); color: var(--ios-blue); border: 1px solid var(--ios-border);
         }
         .ios-btn-large:active { opacity: 0.8; }
 
-        /* Поиск */
         .search-container { position: relative; margin-bottom: 16px; }
         .search-input {
             width: 100%; background: var(--search-bg); border: none; border-radius: 10px;
@@ -96,12 +68,8 @@
         }
         .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--ios-secondary-text); }
 
-        /* Системные списки iOS (Группы) */
         .ios-list { background: var(--ios-card); border-radius: 14px; overflow: hidden; margin-bottom: 16px; }
-        .ios-item {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 14px 16px; cursor: pointer; position: relative;
-        }
+        .ios-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; cursor: pointer; position: relative; }
         .ios-item:active { background: rgba(255,255,255,0.05); }
         .ios-item:not(:last-child)::after {
             content: ''; position: absolute; bottom: 0; left: 16px; right: 0; height: 0.5px; background: var(--ios-border);
@@ -111,37 +79,19 @@
             transform: rotate(45deg); opacity: 0.5;
         }
 
-        /* Табы расписания (Вчера / Сегодня / Завтра) */
         .tabs-container {
             position: sticky; top: 0; z-index: 100;
-            background: rgba(242, 242, 247, 0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             padding: 4px 0 12px 0; margin-bottom: 8px;
         }
-        @media (prefers-color-scheme: dark) { .tabs-container { background: rgba(0,0,0,0.8); } }
         .tabs { display: flex; background: rgba(120, 120, 128, 0.12); padding: 2px; border-radius: 99px; }
         .tab { flex: 1; text-align: center; padding: 8px 4px; font-size: 13px; font-weight: 500; border-radius: 99px; cursor: pointer; color: var(--ios-text); }
         .tab.active { background: var(--ios-card); box-shadow: 0 3px 8px rgba(0,0,0,0.12); font-weight: 600; }
 
-        /* Карточки пар (iOS стиль) */
-        .schedule-item { display: flex; align-items: center; padding: 14px 16px; position: relative; }
-        .schedule-item:not(:last-child)::after {
-            content: ''; position: absolute; bottom: 0; right: 0; left: 60px; height: 0.5px; background: var(--ios-border);
-        }
-        .item-icon {
-            width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center;
-            color: white; font-weight: 700; font-size: 12px; margin-right: 12px; flex-shrink: 0;
-        }
-        .item-info { flex-grow: 1; display: flex; flex-direction: column; }
-        .item-title { font-size: 16px; font-weight: 500; margin-bottom: 2px; }
-        .item-meta { font-size: 13px; color: var(--ios-secondary-text); }
-
-        /* Кнопка "Назад" в стиле iOS */
         .back-button {
             color: var(--ios-blue); font-size: 17px; display: flex; align-items: center; gap: 4px;
             cursor: pointer; margin-bottom: 16px; font-weight: 500; background: none; border: none; padding: 0;
         }
 
-        /* Навигационный стеклянный бар */
         .bottom-bar {
             position: fixed; bottom: 0; left: 0; right: 0;
             background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
@@ -150,10 +100,9 @@
         @media (prefers-color-scheme: dark) { .bottom-bar { background: rgba(28,28,30,0.85); } }
         .bar-btn {
             flex: 1; background: var(--ios-blue); color: white; border: none; padding: 12px; border-radius: 12px;
-            font-size: 15px; font-weight: 600; margin: 0 6px; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 122, 255, 0.15);
+            font-size: 15px; font-weight: 600; margin: 0 6px; cursor: pointer;
         }
 
-        /* Всплывающие окна (Glassmorphism) */
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4);
             z-index: 999; justify-content: center; align-items: center; padding: 24px; backdrop-filter: blur(5px);
@@ -174,6 +123,10 @@
         .alert-btn { background: transparent; border: none; padding: 12px; font-size: 17px; color: var(--ios-blue); cursor: pointer; width: 100%; }
         .alert-btn.bold { font-weight: 600; }
         .alert-btn.cancel { color: #ff3b30; border-right: 0.5px solid var(--ios-border); }
+        
+        .info-notice {
+            padding: 20px; text-align: center; color: var(--ios-secondary-text); font-size: 15px; line-height: 1.4;
+        }
     </style>
 </head>
 <body>
@@ -182,7 +135,7 @@
         <div class="header">
             <div class="logo-placeholder">КрИЖТ<br>ИрГУПС</div>
             <h1 class="title">КрИЖТ ИрГУПС</h1>
-            <p class="subtitle">Выберите вашу роль</p>
+            <p class="subtitle">Электронное расписание техникума</p>
         </div>
         <button class="ios-btn-large" onclick="navigateTo('screen-groups')">Студент</button>
         <button class="ios-btn-large secondary" onclick="openModal('bells-modal')">Время звонков</button>
@@ -192,7 +145,7 @@
         <button class="back-button" onclick="navigateTo('screen-role')"><i>◀</i> Назад</button>
         <div class="search-container">
             <span class="search-icon">🔍</span>
-            <input type="text" class="search-input" id="search" placeholder="Поиск группы" oninput="filterGroups()">
+            <input type="text" class="search-input" id="search" placeholder="Поиск группы (например: ЭПСл)" oninput="filterGroups()">
         </div>
         <div class="ios-list" id="groups-container">
             </div>
@@ -201,18 +154,22 @@
     <div id="screen-timetable" class="screen">
         <button class="back-button" onclick="navigateTo('screen-groups')"><i>◀</i> Группы</button>
         <h2 class="title" id="current-group-title" style="margin-bottom: 2px;">Группа</h2>
-        <p class="subtitle" id="current-date-subtitle" style="margin-bottom: 16px;">Среда, 24 июня</p>
+        <p class="subtitle" style="margin-bottom: 20px;">Выберите день для вывода в чат:</p>
 
         <div class="tabs-container">
             <div class="tabs">
-                <div class="tab" id="tab-yesterday" onclick="switchDay('yesterday')">Вчера</div>
-                <div class="tab active" id="tab-today" onclick="switchDay('today')">Сегодня</div>
-                <div class="tab" id="tab-tomorrow" onclick="switchDay('tomorrow')">Завтра</div>
+                <div class="tab" onclick="requestSchedule('yesterday')">Вчера</div>
+                <div class="tab" onclick="requestSchedule('today')">Сегодня</div>
+                <div class="tab" onclick="requestSchedule('tomorrow')">Завтра</div>
             </div>
         </div>
 
-        <div class="ios-list" id="timetable-container">
+        <div class="ios-list">
+            <div class="info-notice">
+                Нажмите на нужный день выше 👆<br>
+                Бот мгновенно скачает актуальные пары с официального сайта КрИЖТ и пришлет их вам в чат!
             </div>
+        </div>
 
         <div class="bottom-bar">
             <button class="bar-btn" onclick="openModal('bells-modal')">🔔 Звонки</button>
@@ -224,8 +181,8 @@
         <div class="ios-alert">
             <div class="alert-body">
                 <h3 class="alert-title">🔔 Время звонков</h3>
-                <p class="alert-subtitle">Расписание учебных пар техникума</p>
-                <div style="font-size:14px; text-align:left; line-height:1.6;">
+                <p class="alert-subtitle">Расписание учебных пар</p>
+                <div style="font-size:14px; text-align:left; line-height:1.6; color: var(--ios-text);">
                     <b>1️⃣ пара:</b> 08:00 — 09:30<br>
                     <b>2️⃣ пара:</b> 09:40 — 11:20<br>
                     <b>3️⃣ пара:</b> 11:30 — 12:50<br>
@@ -253,25 +210,25 @@
     </div>
 
     <script>
-        // Базовый список групп КрИЖТ
+        // ПОЛНЫЙ список актуальных групп техникума КрИЖТ
         const groups = [
             'ЭПСл.9-25-1', 'ATM.9-23-1', 'ATM.9-24-1', 'ATM.9-24-2', 
             'ATM.9-25-1', 'ATM.9-25-2', 'Д.11-24-6', 'Д.11-24-7', 
-            'Д.11-25-5', 'Д.11-25-6', 'Д.9-23-1'
+            'Д.11-25-5', 'Д.11-25-6', 'Д.9-23-1', 'Д.9-23-2',
+            'Д.9-24-1', 'Д.9-24-2', 'ЭПСл.9-23-1', 'ЭПСл.9-23-2',
+            'ЭПСл.9-24-1', 'ЭПСл.9-24-2'
         ];
 
         let selectedGroup = '';
 
-        // Навигация между экранами
         function navigateTo(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
         }
 
-        // Рендеринг списка групп
         function initGroups() {
             const container = document.getElementById('groups-container');
-            container.innerHTML = groups.map(g => `
+            container.innerHTML = groups.sort().map(g => `
                 <div class="ios-item" onclick="selectGroup('${g}')">
                     <span class="group-name">${g}(К,О)</span>
                     <div class="ios-chevron"></div>
@@ -279,7 +236,6 @@
             `).join('');
         }
 
-        // Живой поиск
         function filterGroups() {
             const query = document.getElementById('search').value.toLowerCase();
             document.querySelectorAll('.ios-item').forEach(item => {
@@ -288,49 +244,20 @@
             });
         }
 
-        // Выбор группы и симуляция запроса
         function selectGroup(groupName) {
             selectedGroup = groupName;
             document.getElementById('current-group-title').textContent = groupName + "(К,О)";
             navigateTo('screen-timetable');
-            loadTimetable('today');
         }
 
-        // Переключение дней (Вчера/Сегодня/Завтра)
-        function switchDay(day) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.getElementById('tab-' + day).classList.add('active');
-            loadTimetable(day);
-        }
-
-        // Демо-отрисовка пар (в реальной версии тут будет AJAX/Fetch к твоему Python парсеру сайта КрИЖТ!)
-        function loadTimetable(day) {
-            const container = document.getElementById('timetable-container');
-            
-            // Временный красивый макет-заглушка под твой дизайн
-            container.innerHTML = `
-                <div class="schedule-item">
-                    <div class="item-icon" style="background:#ff9500">ОБ</div>
-                    <div class="item-info">
-                        <span class="item-title">Обществознание</span>
-                        <span class="item-meta">08:00 - 09:30 • Лекция • Ганьба М.А. • Т14</span>
-                    </div>
-                </div>
-                <div class="schedule-item">
-                    <div class="item-icon" style="background:#007aff">РЯ</div>
-                    <div class="item-info">
-                        <span class="item-title">Русский язык</span>
-                        <span class="item-meta">08:00 - 09:30 • Иное • Борисова Л.В. • Л408</span>
-                    </div>
-                </div>
-                <div class="schedule-item">
-                    <div class="item-icon" style="background:#ffcc00">ИС</div>
-                    <div class="item-info">
-                        <span class="item-title">История</span>
-                        <span class="item-meta">09:40 - 11:10 • Лекция • Марцыфей А.В. • Т11</span>
-                    </div>
-                </div>
-            `;
+        // КЛЮЧЕВАЯ ФУНКЦИЯ: Передает боту точный приказ спарсить сайт ИрГУПС
+        function requestSchedule(day) {
+            if(!selectedGroup) return;
+            if(window.Telegram && window.Telegram.WebApp) {
+                // Передаем строку типа "GET_SPO_SCHEDULE:ЭПСл.9-25-1:today"
+                window.Telegram.WebApp.sendData("GET_SPO_SCHEDULE:" + selectedGroup + ":" + day);
+                window.Telegram.WebApp.close();
+            }
         }
 
         function openModal(id) { document.getElementById(id).style.display = 'flex'; }
@@ -350,7 +277,6 @@
             window.Telegram.WebApp.expand();
         }
 
-        // Запуск
         initGroups();
     </script>
 </body>
