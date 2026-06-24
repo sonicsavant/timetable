@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Расписание КрИЖТ</title>
+    <title>Расписание КТЖТ</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
@@ -13,187 +13,426 @@
             --ios-secondary-text: #8e8e93;
             --ios-blue: #007aff;
             --ios-border: rgba(60, 60, 67, 0.12);
-            --search-bg: rgba(118, 118, 128, 0.12);
         }
 
+        /* Автоматическая поддержка темной темы Telegram Premium */
         @media (prefers-color-scheme: dark) {
             :root {
-                --ios-bg: #000000;
-                --ios-card: #1c1c1e;
+                --ios-bg: #1c1c1e;
+                --ios-card: #2c2c2e;
                 --ios-text: #ffffff;
                 --ios-secondary-text: #aeaeb2;
                 --ios-blue: #0a84ff;
                 --ios-border: rgba(84, 84, 88, 0.4);
-                --search-bg: #2c2c2e;
             }
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--ios-bg);
             color: var(--ios-text);
             margin: 0;
             padding: 16px;
-            padding-bottom: 90px;
+            padding-bottom: 100px;
             user-select: none;
             -webkit-font-smoothing: antialiased;
         }
 
-        .screen { display: none; }
-        .screen.active { display: block; }
-
-        .header { text-align: center; margin: 30px 0; }
-        .logo-placeholder {
-            width: 70px; height: 70px; background: #107c41; border-radius: 18px;
-            margin: 0 auto 12px auto; display: flex; align-items: center; justify-content: center;
-            color: white; font-weight: 700; font-size: 13px; text-align: center;
-            box-shadow: 0 8px 24px rgba(16, 124, 65, 0.15);
-        }
-        .title { font-size: 24px; font-weight: 700; margin: 0 0 4px 0; }
-        .subtitle { font-size: 14px; color: var(--ios-secondary-text); margin: 0; }
-
-        .ios-btn-large {
-            background: var(--ios-blue); color: white; border: none; width: 100%;
-            padding: 16px; border-radius: 14px; font-size: 17px; font-weight: 600;
-            margin-bottom: 12px; cursor: pointer; transition: opacity 0.1s ease;
-        }
-        .ios-btn-large.secondary {
-            background: var(--ios-card); color: var(--ios-blue); border: 1px solid var(--ios-border);
-        }
-        .ios-btn-large:active { opacity: 0.8; }
-
-        .search-container { position: relative; margin-bottom: 16px; }
-        .search-input {
-            width: 100%; background: var(--search-bg); border: none; border-radius: 10px;
-            padding: 10px 10px 10px 36px; box-sizing: border-box; color: var(--ios-text); font-size: 16px; outline: none;
-        }
-        .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--ios-secondary-text); }
-
-        .ios-list { background: var(--ios-card); border-radius: 14px; overflow: hidden; margin-bottom: 16px; }
-        .ios-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; cursor: pointer; position: relative; }
-        .ios-item:active { background: rgba(255,255,255,0.05); }
-        .ios-item:not(:last-child)::after {
-            content: ''; position: absolute; bottom: 0; left: 16px; right: 0; height: 0.5px; background: var(--ios-border);
-        }
-        .ios-chevron {
-            width: 8px; height: 8px; border-top: 2px solid var(--ios-secondary-text); border-right: 2px solid var(--ios-secondary-text);
-            transform: rotate(45deg); opacity: 0.5;
-        }
-
+        /* Капсульные табы в стиле Apple */
         .tabs-container {
-            position: sticky; top: 0; z-index: 100;
-            padding: 4px 0 12px 0; margin-bottom: 8px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background-color: rgba(242, 242, 247, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 4px 0 12px 0;
+            margin-bottom: 8px;
         }
-        .tabs { display: flex; background: rgba(120, 120, 128, 0.12); padding: 2px; border-radius: 99px; }
-        .tab { flex: 1; text-align: center; padding: 8px 4px; font-size: 13px; font-weight: 500; border-radius: 99px; cursor: pointer; color: var(--ios-text); }
-        .tab.active { background: var(--ios-card); box-shadow: 0 3px 8px rgba(0,0,0,0.12); font-weight: 600; }
-
-        /* Стильные iOS карточки предметов */
-        .schedule-item { display: flex; align-items: center; padding: 14px 16px; position: relative; }
-        .schedule-item:not(:last-child)::after {
-            content: ''; position: absolute; bottom: 0; right: 0; left: 62px; height: 0.5px; background: var(--ios-border);
-        }
-        
-        .item-icon {
-            width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;
-            color: white; font-weight: 700; font-size: 11px; margin-right: 14px; flex-shrink: 0;
-        }
-        .item-info { flex-grow: 1; display: flex; flex-direction: column; }
-        .item-title { font-size: 16px; font-weight: 500; margin-bottom: 2px; line-height: 1.3; }
-        .item-meta { font-size: 13px; color: var(--ios-secondary-text); line-height: 1.2; }
-
-        .back-button {
-            color: var(--ios-blue); font-size: 17px; display: flex; align-items: center; gap: 4px;
-            cursor: pointer; margin-bottom: 16px; font-weight: 500; background: none; border: none; padding: 0;
+        @media (prefers-color-scheme: dark) {
+            .tabs-container { background-color: rgba(28, 28, 30, 0.8); }
         }
 
+        .tabs {
+            display: flex;
+            background: rgba(120, 120, 128, 0.12);
+            padding: 2px;
+            border-radius: 99px;
+        }
+
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 8px 4px;
+            font-size: 13px;
+            font-weight: 500;
+            border-radius: 99px;
+            cursor: pointer;
+            color: var(--ios-text);
+            transition: all 0.2s ease;
+        }
+
+        .tab.active {
+            background: var(--ios-card);
+            box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.12), 0px 3px 1px rgba(0, 0, 0, 0.04);
+            font-weight: 600;
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Заголовки дней недели в стиле системных списков iOS */
+        .day-header {
+            font-size: 13px;
+            text-transform: uppercase;
+            color: var(--ios-secondary-text);
+            margin: 18px 0 6px 16px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-right: 16px;
+        }
+        .day-header.today-title {
+            color: var(--ios-blue);
+            font-weight: 700;
+        }
+
+        /* Контейнер списка предметов */
+        .ios-list {
+            background: var(--ios-card);
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            margin-bottom: 10px;
+        }
+
+        /* Строка предмета */
+        .ios-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .ios-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            left: 60px;
+            height: 0.5px;
+            background-color: var(--ios-border);
+        }
+
+        /* Круглые брендированные плашки иконок */
+        .ios-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 12px;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        /* Текстовый блок предмета */
+        .ios-info {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            padding-right: 10px;
+        }
+
+        .subject-title {
+            font-size: 16px;
+            font-weight: 500;
+            line-height: 1.3;
+            margin-bottom: 2px;
+        }
+
+        .subject-meta {
+            font-size: 13px;
+            color: var(--ios-secondary-text);
+            line-height: 1.2;
+        }
+
+        /* Стрелочка шеврон справа как в iOS */
+        .ios-chevron {
+            width: 8px;
+            height: 8px;
+            border-top: 2px solid var(--ios-border);
+            border-right: 2px solid var(--ios-border);
+            transform: rotate(45deg);
+            flex-shrink: 0;
+            margin-left: auto;
+        }
+
+        /* Нижний стеклянный бар навигации */
         .bottom-bar {
-            position: fixed; bottom: 0; left: 0; right: 0;
-            background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
-            border-top: 0.5px solid var(--ios-border); display: flex; padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 0px)) 20px; z-index: 500;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-top: 0.5px solid var(--ios-border);
+            display: flex;
+            padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 0px)) 20px;
+            z-index: 500;
         }
-        @media (prefers-color-scheme: dark) { .bottom-bar { background: rgba(28,28,30,0.85); } }
-        .bar-btn {
-            flex: 1; background: var(--ios-blue); color: white; border: none; padding: 12px; border-radius: 12px;
-            font-size: 15px; font-weight: 600; margin: 0 6px; cursor: pointer;
+        @media (prefers-color-scheme: dark) {
+            .bottom-bar { background: rgba(30, 30, 30, 0.85); }
         }
 
+        .bar-button {
+            flex: 1;
+            background: var(--ios-blue);
+            color: #ffffff;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            margin: 0 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.15);
+            transition: opacity 0.2s ease;
+        }
+        .bar-button:active { opacity: 0.8; }
+
+        /* ИДЕАЛЬНЫЕ ЭППЛОВСКИЕ ВСПЛЫВАЮЩИЕ ОКНА (Glassmorphism) */
         .modal-overlay {
-            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4);
-            z-index: 999; justify-content: center; align-items: center; padding: 24px; backdrop-filter: blur(5px);
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 999;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
         }
+
         .ios-alert {
-            background: rgba(255, 255, 255, 0.88); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
-            border-radius: 14px; width: 100%; max-width: 275px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); text-align: center; overflow: hidden;
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-radius: 14px;
+            width: 100%;
+            max-width: 275px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            text-align: center;
+            overflow: hidden;
+            animation: alertShow 0.25s cubic-bezier(0.1, 0.8, 0.25, 1);
         }
-        @media (prefers-color-scheme: dark) { .ios-alert { background: rgba(40, 40, 44, 0.88); } }
+        @media (prefers-color-scheme: dark) {
+            .ios-alert { background: rgba(40, 40, 44, 0.88); }
+        }
+
+        @keyframes alertShow {
+            0% { transform: scale(1.15); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
         .alert-body { padding: 18px; }
-        .alert-title { font-size: 17px; font-weight: 600; margin-bottom: 4px; }
-        .alert-subtitle { font-size: 13px; color: var(--ios-secondary-text); margin-bottom: 12px; }
-        .ios-textarea {
-            width: 100%; height: 80px; background: rgba(120, 120, 128, 0.08); color: var(--ios-text);
-            border: 0.5px solid var(--ios-border); border-radius: 8px; padding: 8px; box-sizing: border-box; resize: none;
-        }
-        .alert-buttons { display: flex; border-top: 0.5px solid var(--ios-border); }
-        .alert-btn { background: transparent; border: none; padding: 12px; font-size: 17px; color: var(--ios-blue); cursor: pointer; width: 100%; }
-        .alert-btn.bold { font-weight: 600; }
-        .alert-btn.cancel { color: #ff3b30; border-right: 0.5px solid var(--ios-border); }
+        .alert-title { font-size: 17px; font-weight: 600; margin: 0 0 4px 0; }
+        .alert-subtitle { font-size: 13px; color: var(--ios-secondary-text); margin: 0 0 12px 0; }
         
-        .center-notice { padding: 40px 20px; text-align: center; color: var(--ios-secondary-text); font-size: 15px; }
+        .alert-text {
+            font-size: 14px;
+            line-height: 1.5;
+            text-align: left;
+            margin: 0;
+        }
+
+        .ios-textarea {
+            width: 100%;
+            height: 90px;
+            background: rgba(120, 120, 128, 0.08);
+            color: var(--ios-text);
+            border: 0.5px solid var(--ios-border);
+            border-radius: 8px;
+            padding: 8px;
+            box-sizing: border-box;
+            resize: none;
+            font-family: inherit;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        /* Кнопки алертов с тонкими линиями */
+        .alert-buttons {
+            display: flex;
+            flex-direction: column;
+            border-top: 0.5px solid var(--ios-border);
+        }
+        .alert-buttons-row {
+            display: flex;
+            border-top: 0.5px solid var(--ios-border);
+        }
+
+        .alert-btn {
+            background: transparent;
+            border: none;
+            padding: 12px;
+            font-size: 17px;
+            color: var(--ios-blue);
+            cursor: pointer;
+            font-family: inherit;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .alert-btn.bold { font-weight: 600; }
+        .alert-btn:active { background: rgba(0,0,0,0.05); }
+        .alert-btn.cancel { color: #ff3b30; }
+        
+        .alert-buttons-row .alert-btn:first-child {
+            border-right: 0.5px solid var(--ios-border);
+        }
     </style>
 </head>
 <body>
 
-    <div id="screen-role" class="screen active">
-        <div class="header">
-            <div class="logo-placeholder">КрИЖТ<br>ИрГУПС</div>
-            <h1 class="title">КрИЖТ ИрГУПС</h1>
-            <p class="subtitle">Электронное расписание техникума</p>
+    <div class="tabs-container">
+        <div class="tabs">
+            <div class="tab active" id="tab-even" onclick="switchTab('even')">Четная</div>
+            <div class="tab" id="tab-odd" onclick="switchTab('odd')">Нечетная</div>
+            <div class="tab" id="tab-session" onclick="switchTab('session')">🎓 Сессия</div>
         </div>
-        <button class="ios-btn-large" onclick="navigateTo('screen-groups')">Студент</button>
-        <button class="ios-btn-large secondary" onclick="openModal('bells-modal')">Время звонков</button>
     </div>
 
-    <div id="screen-groups" class="screen">
-        <button class="back-button" onclick="navigateTo('screen-role')">◀ Назад</button>
-        <div class="search-container">
-            <span class="search-icon">🔍</span>
-            <input type="text" class="search-input" id="search" placeholder="Поиск группы (например: ЭПСл)" oninput="filterGroups()">
+    <div id="even" class="tab-content active">
+        <div class="day-header" id="h-even-1">Понедельник</div>
+        <div class="ios-list" id="even-1">
+            <div class="ios-item"><div class="ios-icon" style="background-color:#5856d6">РВ</div><div class="ios-info"><span class="subject-title">Разговоры о важном</span><span class="subject-meta">1 пара • Климовская С.В. • Ауд. А221</span></div><div class="ios-chevron"></div></div>
+            <div class="ios-item"><div class="ios-icon" style="background-color:#34c759">БИ</div><div class="ios-info"><span class="subject-title">Биология</span><span class="subject-meta">2 пара • Казюлина А.Ф. • Ауд. Л207</span></div><div class="ios-chevron"></div></div>
+            <div class="ios-item"><div class="ios-icon" style="background-color:#af52de">ФЗ</div><div class="ios-info"><span class="subject-title">Физика</span><span class="subject-meta">3 пара • Селина И.В. • Ауд. Л301</span></div><div class="ios-chevron"></div></div>
+            <div class="ios-item"><div class="ios-icon" style="background-color:#ff9500">ОБ</div><div class="ios-info"><span class="subject-title">Обществознание</span><span class="subject-meta">4 пара • Ганьба M.А. • Ауд. Т14</span></div><div class="ios-chevron"></div></div>
         </div>
-        <div class="ios-list" id="groups-container"></div>
+
+        <div class="day-header" id="h-even-2">Вторник</div>
+        <div class="ios-list" id="even-2">
+            <div class="ios-item"><div class="ios-icon" style="background-color:#ff2d55">ЛТ</div><div class="ios-info"><span class="subject-title">Литература</span><span class="subject-meta">1 пара • Буданова Т.Ю. • Ауд. Л408</span></div><div class="ios-chevron"></div></div>
+            <div class="ios-item"><div class="ios-icon" style="background-color:#007aff">МТ</div><div class="ios-info"><span class="subject-title">Математика</span><span class="subject-meta">2 пара • Чуракова Е.А. • Ауд. Л203</span></div><div class="ios-chevron"></div></div>
+            <div class="ios-item"><div class="ios-icon" style="background-color:#ffcc00">ИС</div><div class="ios-info"><span class="subject-title">История</span><span class="subject-meta">3 пара • Марцыфей А.В. • Ауд. Т11</span></div><div class="ios-chevron"></div></div>
+            <div class="ios-item"><div class="ios-icon" style="background-color:#4cd964">ИН</div><div class="ios-info"><span class="subject-title">Информатика</span><span class="subject-meta">4 пара • 1 гр. (Короткевич) А407 / 2 гр. (Банжура) А414</span></div><div class="ios-chevron"></div></div>
+        </div>
+
+        <div class="day-header" id="h-even-3">Среда</div>
+        <div class="ios-list" id="even-3">
+            <div class="ios-item"><div class="ios-icon" style="background-color:#5ac8fa">ИН</div><div class="ios-info"><span class="subject-title">Иностранный язык</span><span class="subject-meta">1 пара • 1 гр. (Ровда) Л302 / 2 гр. (Гончакова) Л407</span></div><div class="ios-chevron"></div></div>
+            <div class="ios-item"><div class="ios-icon" style="background-color:#ff3b30">ФР</div><div class="ios-info"><span class="subject-title">Физ-ра</span><span class="subject-meta">2 пара • Ситничук Е.Н. • На базе</span></div><div class="ios-chevron"></div></div>
+            <div class="ios-item"><div class="ios-icon" style="background-color:#007aff">МТ</div><div class="ios-info"><span class="subject-title">Математика</span><span class="subject-meta">3 пара • Чуракова Е.А. • Ауд. Л203</span></div><div class="ios-chevron"></div></div>
+            <div class="ios-item"><div class="ios-icon" style="background-color:#e0a96d">ХМ</div><div class="ios-info"><span class="subject-title">Химия</span><span class="subject-meta">4 пара • Гурков H.А. • Ауд. Т10</span></div><div class="ios-chevron"></div></div>
+        </div>
+
+        <div class="day-header" id="h-even-4">Четверг</div>
+        <div class="ios-list" id="even-4">
+            <div class="ios-item"><div class="ios-icon" style="background-color:#af52de">ФЗ</div><div class="ios-info"><span class="subject-title">Физика</span><span class="subject-meta">1 пара • Селина И.В. • Ауд. Л301</span></div><div class="ios-chevron"></div></div>
+            <div class="ios-item"><div class="ios-icon" style="background-color:#8e8e93">ОБ</div><div class="ios-info"><span class="subject-title">ОБЗР</span><span class="subject-meta">2 пара • Фомичёв Ю.Г. • Ауд. Л201</span></div><div class="ios-chevron"></div></div>
+        </div>
+
+        <div class="day-header" id="h-even-5">Пятница</div>
+        <div class="ios-list" id="even-5">
+            <div class="ios-item"><div class="ios-icon" style="background-color:#007aff">МТ</div><div class="ios-info"><span class="subject-title">Математика</span><span class="subject-meta">1 пара • Чуракова Е.А. • Ауд. Л203</span></div><div class="ios-chevron"></div></div>
+            <div class="ios-item"><div class="ios-icon" style="background-color:#ffcc00">ИС</div><div class="ios-info"><span class="subject-title">История</span><span class="subject-meta">2 пара • Марцыфей А.В. • Ауд. Т14</span></div><div class="ios-chevron"></div></div>
+            <div class="ios-item"><div class="ios-icon" style="background-color:#ff2d55">РЯ</div><div class="ios-info"><span class="subject-title">Русский язык</span><span class="subject-meta">3 пара • Борисова Л.В. • Ауд. Л408</span></div><div class="ios-chevron"></div></div>
+        </div>
+
+        <div class="day-header" id="h-even-6">Суббота</div>
+        <div class="ios-list" id="even-6">
+            <div class="ios-item"><div class="ios-icon" style="background-color:#ff2d55">ЛТ</div><div class="ios-info"><span class="subject-title">Литература</span><span class="subject-meta">1 пара • Буданова Т.Ю. • Ауд. Л408</span></div><div class="ios-chevron"></div></div>
+            <div class="ios-item"><div class="ios-icon" style="background-color:#007aff">МТ</div><div class="ios-info"><span class="subject-title">Математика</span><span class="subject-meta">2 пара • Чуракова Е.А. • Ауд. Л203</span></div><div class="ios-chevron"></div></div>
+        </div>
     </div>
 
-    <div id="screen-timetable" class="screen">
-        <button class="back-button" onclick="navigateTo('screen-groups')">◀ Группы</button>
-        <h2 class="title" id="current-group-title" style="margin-bottom: 2px;">Группа</h2>
-        <p class="subtitle" id="current-date-subtitle" style="margin-bottom: 20px;">Среда, 24 июня</p>
-
-        <div class="tabs-container">
-            <div class="tabs">
-                <div class="tab" id="tab-yesterday" onclick="switchDay('yesterday')">Вчера</div>
-                <div class="tab" id="tab-today" onclick="switchDay('today')">Сегодня</div>
-                <div class="tab" id="tab-tomorrow" onclick="switchDay('tomorrow')">Завтра</div>
-            </div>
+    <div id="odd" class="tab-content">
+        <div class="day-header" id="h-odd-1">Понедельник</div>
+        <div class="ios-list" id="odd-1">
+            <div class="ios-item"><div class="ios-icon" style="background-color:#5856d6">РВ</div><div class="ios-info"><span class="subject-title">Разговоры о важном</span><span class="subject-meta">1 пара • Климовская С.В. • Ауд. А221</span></div><div class="ios-chevron"></div></div>
+            <div class="ios-item"><div class="ios-icon" style="background-color:#007aff">МТ</div><div class="ios-info"><span class="subject-title">Математика</span><span class="subject-meta">2 пара • Чуракова Е.А. • Ауд. Л203</span></div><div class="ios-chevron"></div></div>
         </div>
 
-        <div class="ios-list" id="timetable-container"></div>
-
-        <div class="bottom-bar">
-            <button class="bar-btn" onclick="openModal('bells-modal')">🔔 Звонки</button>
-            <button class="bar-btn" onclick="openModal('support-modal')">🆘 Поддержка</button>
+        <div class="day-header" id="h-odd-2">Вторник</div>
+        <div class="ios-list" id="odd-2">
+            <div class="ios-item"><div class="ios-icon" style="background-color:#ffcc00">ИС</div><div class="ios-info"><span class="subject-title">История</span><span class="subject-meta">1 пара • Марцыфей А.В. • Ауд. А312</span></div><div class="ios-chevron"></div></div>
+            <div class="ios-item"><div class="ios-icon" style="background-color:#4cd964">ИН</div><div class="ios-info"><span class="subject-title">Информатика</span><span class="subject-meta">2 пара • 1 гр. (Короткевич) Л409а / 2 гр. (Банжура) А414</span></div><div class="ios-chevron"></div></div>
+            <div class="ios-item"><div class="ios-icon" style="background-color:#ff3b30">ФР</div><div class="ios-info"><span class="subject-title">Физ-ра</span><span class="subject-meta">3 пара • Ситничук Е.Н. • На базе</span></div><div class="ios-chevron"></div></div>
+            <div class="ios-item"><div class="ios-icon" style="background-color:#007aff">МТ</div><div class="ios-info"><span class="subject-title">Математика</span><span class="subject-meta">4 пара • Чуракова Е.А. • Ауд. Л203</span></div><div class="ios-chevron"></div></div>
         </div>
+
+        <div class="day-header" id="h-odd-3">Среда</div>
+        <div class="ios-list" id="odd-3">
+            <div class="ios-item"><div class="ios-icon" style="background-color:#ff9500">ОБ</div><div class="ios-info"><span class="subject-title">Обществознание</span><span class="subject-meta">1 пара • Ганьба M.А. • Ауд. Т14</span></div><div class="ios-chevron"></div></div>
+            <div class="ios-item"><div class="ios-icon" style="background-color:#ffcc00">ИС</div><div class="ios-info"><span class="subject-title">История</span><span class="subject-meta">2 пара • Марцыфей А.В. • Ауд. Т11</span></div><div class="ios-chevron"></div></div>
+            <div class="ios-item"><div class="ios-icon" style="background-color:#af52de">ФЗ</div><div class="ios-info"><span class="subject-title">Физика</span><span class="subject-meta">3 пара • Селина И.В. • Ауд. Л301</span></div><div class="ios-chevron"></div></div>
+            <div class="ios-item"><div class="ios-icon" style="background-color:#15e6cd">ПД</div><div class="ios-info"><span class="subject-title">Основы проектной деят-сти</span><span class="subject-meta">4 пара • Ацепаева M.Б. • Ауд. Л401</span></div><div class="ios-chevron"></div></div>
+        </div>
+
+        <div class="day-header" id="h-odd-4">Четверг</div>
+        <div class="ios-list" id="odd-4">
+            <div class="ios-item"><div class="ios-icon" style="background-color:#bcbbc1">💤</div><div class="ios-info"><span class="subject-title">Окно</span><span class="subject-meta">1 пара • Отдыхаем</span></div><div class="ios-chevron"></div></div>
+            <div class="ios-item"><div class="ios-icon" style="background-color:#4a7a96">ГГ</div><div class="ios-info"><span class="subject-title">География</span><span class="subject-meta">2 пара • Горбань Т.П. • Ауд. Л401</span></div><div class="ios-chevron"></div></div>
+            <div class="ios-item"><div class="ios-icon" style="background-color:#5ac8fa">ИН</div><div class="ios-info"><span class="subject-title">Иностранный язык</span><span class="subject-meta">3 пара • 1 гр. (Ровда) Л302 / 2 гр. (Гончакова) Л407</span></div><div class="ios-chevron"></div></div>
+            <div class="ios-item"><div class="ios-icon" style="background-color:#8e8e93">ОБ</div><div class="ios-info"><span class="subject-title">ОБЗР</span><span class="subject-meta">4 пара • Фомичёв Ю.Г. • Ауд. Л201</span></div><div class="ios-chevron"></div></div>
+        </div>
+
+        <div class="day-header" id="h-odd-5">Пятница</div>
+        <div class="ios-list" id="odd-5">
+            <div class="ios-item"><div class="ios-icon" style="background-color:#ff2d55">ЛТ</div><div class="ios-info"><span class="subject-title">Литература</span><span class="subject-meta">1 пара • Буданова Т.Ю. • Ауд. Л401</span></div><div class="ios-chevron"></div></div>
+            <div class="ios-item"><div class="ios-icon" style="background-color:#34c759">БИ</div><div class="ios-info"><span class="subject-title">Биология</span><span class="subject-meta">2 пара • Казюлина А.Ф. • Ауд. Л504</span></div><div class="ios-chevron"></div></div>
+            <div class="ios-item"><div class="ios-icon" style="background-color:#007aff">МТ</div><div class="ios-info"><span class="subject-title">Математика</span><span class="subject-meta">3 пара • Чуракова Е.А. • Ауд. Л203</span></div><div class="ios-chevron"></div></div>
+            <div class="ios-item"><div class="ios-icon" style="background-color:#4cd964">ИН</div><div class="ios-info"><span class="subject-title">Информатика</span><span class="subject-meta">4 пара • 1 гр. (Короткевич) Л404 / 2 гр. (Банжура) Л414</span></div><div class="ios-chevron"></div></div>
+        </div>
+
+        <div class="day-header" id="h-odd-6">Суббота</div>
+        <div class="ios-list" id="odd-6">
+            <div class="ios-item"><div class="ios-icon" style="background-color:#af52de">ФЗ</div><div class="ios-info"><span class="subject-title">Физика</span><span class="subject-meta">1 пара • Селина И.В. • Ауд. Л301</span></div><div class="ios-chevron"></div></div>
+            <div class="ios-item"><div class="ios-icon" style="background-color:#e0a96d">ХМ</div><div class="ios-info"><span class="subject-title">Химия</span><span class="subject-meta">2 пара • Гурков H.А. • Ауд. Т10</span></div><div class="ios-chevron"></div></div>
+        </div>
+    </div>
+
+    <div id="session" class="tab-content">
+        <div class="day-header">Расписание экзаменов (ЭПСл.9-25-1)</div>
+        <div class="ios-list">
+            <div class="ios-item"><div class="ios-icon" style="background-color:#007aff">МТ</div><div class="ios-info"><span class="subject-title">Математика (Консультация)</span><span class="subject-meta">🗓 22 июня | ⏰ 8:00–9:30 | 👤 Чуракова Е.А. | 🚪 Л203</span></div><div class="ios-chevron"></div></div>
+            <div class="ios-item"><div class="ios-icon" style="background-color:#007aff">МТ</div><div class="ios-info"><span class="subject-title">Математика (ЭКЗАМЕН)</span><span class="subject-meta">🗓 23 июня | ⏰ 8:00–11:10 | 👤 Чуракова Е.А. | 🚪 Л203</span></div><div class="ios-chevron"></div></div>
+            <div class="ios-item"><div class="ios-icon" style="background-color:#ff2d55">РЯ</div><div class="ios-info"><span class="subject-title">Русский язык (ЭКЗАМЕН)</span><span class="subject-meta">🗓 24 июня | ⏰ 8:00–11:10 | 👤 Борисова Л.В. | 🚪 Л408</span></div><div class="ios-chevron"></div></div>
+            <div class="ios-item"><div class="ios-icon" style="background-color:#af52de">ФЗ</div><div class="ios-info"><span class="subject-title">Физика (ЭКЗАМЕН)</span><span class="subject-meta">🗓 25 июня | ⏰ 9:40–12:50 | 👤 Селина И.В. | 🚪 Л301</span></div><div class="ios-chevron"></div></div>
+            <div class="ios-item"><div class="ios-icon" style="background-color:#4cd964">ИН</div><div class="ios-info"><span class="subject-title">Информатика (Консультация)</span><span class="subject-meta">🗓 26 июня | ⏰ 13:20–14:50 | 👤 Банжура / Короткевич</span></div><div class="ios-chevron"></div></div>
+            <div class="ios-item"><div class="ios-icon" style="background-color:#4cd964">ИН</div><div class="ios-info"><span class="subject-title">Информатика (ЭКЗАМЕН)</span><span class="subject-meta">🗓 27 июня | ⏰ 11:20–14:50 | 👤 Банжура / Короткевич</span></div><div class="ios-chevron"></div></div>
+        </div>
+    </div>
+
+    <div class="bottom-bar">
+        <button class="bar-button" onclick="openModal('bells-modal')">🔔 Звонки</button>
+        <button class="bar-button" onclick="openModal('support-modal')">🆘 Поддержка</button>
     </div>
 
     <div id="bells-modal" class="modal-overlay" onclick="closeModal(event, 'bells-modal')">
         <div class="ios-alert">
             <div class="alert-body">
                 <h3 class="alert-title">🔔 Время звонков</h3>
-                <div style="font-size:14px; text-align:left; line-height:1.6; color: var(--ios-text);">
+                <p class="alert-subtitle">Расписание учебных пар</p>
+                <p class="alert-text">
                     <b>1️⃣ пара:</b> 08:00 — 09:30<br>
                     <b>2️⃣ пара:</b> 09:40 — 11:20<br>
                     <b>3️⃣ пара:</b> 11:30 — 12:50<br>
                     <b>4️⃣ пара:</b> 13:20 — 14:50
-                </div>
+                </p>
             </div>
             <div class="alert-buttons">
                 <button class="alert-btn bold" onclick="document.getElementById('bells-modal').style.display='none'">Хорошо</button>
@@ -201,13 +440,14 @@
         </div>
     </div>
 
-    <div id="support-modal" class="modal-overlay" onclick="closeMockModal(event, 'support-modal')">
+    <div id="support-modal" class="modal-overlay" onclick="closeModal(event, 'support-modal')">
         <div class="ios-alert">
             <div class="alert-body">
                 <h3 class="alert-title">🆘 Поддержка</h3>
-                <textarea id="support-text" class="ios-textarea" placeholder="Сообщение старосте..."></textarea>
+                <p class="alert-subtitle">Сообщение улетит старосте в чат</p>
+                <textarea id="support-text" class="ios-textarea" placeholder="Введите ваше сообщение..."></textarea>
             </div>
-            <div class="alert-buttons">
+            <div class="alert-buttons-row">
                 <button class="alert-btn cancel" onclick="document.getElementById('support-modal').style.display='none'">Отмена</button>
                 <button class="alert-btn bold" onclick="sendSupport()">Отправить</button>
             </div>
@@ -215,107 +455,59 @@
     </div>
 
     <script>
-        const groups = [
-            'ЭПСл.9-25-1', 'ATM.9-23-1', 'ATM.9-24-1', 'ATM.9-24-2', 
-            'ATM.9-25-1', 'ATM.9-25-2', 'Д.11-24-6', 'Д.11-24-7', 
-            'Д.11-25-5', 'Д.11-25-6', 'Д.9-23-1', 'Д.9-23-2',
-            'Д.9-24-1', 'Д.9-24-2', 'ЭПСл.9-23-1', 'ЭПСл.9-23-2',
-            'ЭПСл.9-24-1', 'ЭПСл.9-24-2'
-        ];
-
-        // Локальное статичное расписание для демонстрации дизайна
-        const mockData = {
-            yesterday: [
-                { num: "1", name: "Литература", type: "Лекция", teacher: "Буданова Т.Ю.", room: "Л408", color: "#ff9500", short: "ЛИ" },
-                { num: "2", name: "Математика", type: "Практика", teacher: "Чуракова Е.А.", room: "Л203", color: "#34c759", short: "МА" }
-            ],
-            today: [
-                { num: "1", name: "Обществознание", type: "Лекция", teacher: "Ганьба М.А.", room: "Т14", color: "#ff9500", short: "ОБ" },
-                { num: "2", name: "Русский язык", type: "Иное", teacher: "Борисова Л.В.", room: "Л408", color: "#007aff", short: "РЯ" },
-                { num: "3", name: "История", type: "Лекция", teacher: "Марцыфей А.В.", room: "Т11", color: "#ffcc00", short: "ИС" }
-            ],
-            tomorrow: [
-                { num: "1", name: "Физика", type: "Лекция", teacher: "Селина И.В.", room: "Л301", color: "#af52de", short: "ФИ" },
-                { num: "2", name: "ОБЗР", type: "Практика", teacher: "Фомичёв Ю.Г.", room: "Л201", color: "#ff2d55", short: "ОБ" }
-            ]
-        };
-
-        const daysTitles = { yesterday: "Вчера, 23 июня", today: "Сегодня, 24 июня", tomorrow: "Завтра, 25 июня" };
-        let selectedGroup = '';
-        let currentDay = 'today';
-
-        function navigateTo(screenId) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
-        }
-
-        function initGroups() {
-            document.getElementById('groups-container').innerHTML = groups.sort().map(g => `
-                <div class="ios-item" onclick="selectGroup('${g}')">
-                    <span class="group-name">${g}</span><div class="ios-chevron"></div>
-                </div>
-            `).join('');
-        }
-
-        function filterGroups() {
-            const query = document.getElementById('search').value.toLowerCase();
-            document.querySelectorAll('.ios-item').forEach(item => {
-                item.style.display = item.querySelector('.group-name').textContent.toLowerCase().includes(query) ? 'flex' : 'none';
-            });
-        }
-
-        function selectGroup(groupName) {
-            selectedGroup = groupName;
-            document.getElementById('current-group-title').textContent = groupName + "(К,О)";
-            navigateTo('screen-timetable');
-            switchDay('today');
-        }
-
-        function switchDay(day) {
-            currentDay = day;
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.getElementById('tab-' + day).classList.add('active');
-            document.getElementById('current-date-subtitle').textContent = daysTitles[day];
-            loadTimetable();
-        }
-
-        function loadTimetable() {
-            const container = document.getElementById('timetable-container');
-            const data = mockData[currentDay];
-
-            if (!data || data.length === 0) {
-                container.innerHTML = `<div class="center-notice">🎉 Выходной день!</div>`;
-                return;
-            }
-
-            container.innerHTML = data.map(l => `
-                <div class="schedule-item">
-                    <div class="item-icon" style="background:${l.color}">${l.short}</div>
-                    <div class="item-info">
-                        <span class="item-title">${l.name}</span>
-                        <span class="item-meta">08:00 - 09:30 • ${l.type} • ${l.teacher} • ${l.room}</span>
-                    </div>
-                </div>
-            `).join('');
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+            document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('active'); });
+            
+            if(tabId === 'even') document.getElementById('tab-even').classList.add('active');
+            if(tabId === 'odd') document.getElementById('tab-odd').classList.add('active');
+            if(tabId === 'session') document.getElementById('tab-session').classList.add('active');
+            
+            document.getElementById(tabId).classList.add('active');
         }
 
         function openModal(id) { document.getElementById(id).style.display = 'flex'; }
         function closeModal(e, id) { if(e.target === document.getElementById(id)) document.getElementById(id).style.display = 'none'; }
-        function openMockModal(id) { document.getElementById(id).style.display = 'flex'; }
-        function closeMockModal(e, id) { if(e.target === document.getElementById(id)) document.getElementById(id).style.display = 'none'; }
 
         function sendSupport() {
             var text = document.getElementById('support-text').value.trim();
-            if(!text || !window.Telegram?.WebApp) return;
-            window.Telegram.WebApp.sendData("SUPPORT_MSG:" + text);
-            document.getElementById('support-modal').style.display = 'none';
+            if(!text) return;
+            if(window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.sendData("SUPPORT_MSG:" + text);
+                window.Telegram.WebApp.close();
+            }
         }
 
-        if (window.Telegram && window.Telegram.WebApp) {
+        function highlightToday() {
+            var now = new Date();
+            var dayOfWeek = now.getDay(); 
+            var startOfYear = new Date(now.getFullYear(), 0, 1);
+            var pastDaysOfYear = (now - startOfYear) / 86400000;
+            var weekNum = Math.ceil((pastDaysOfYear + startOfYear.getDay() + 1) / 7);
+            var isEven = weekNum % 2 === 0;
+
+            if (dayOfWeek >= 1 && dayOfWeek <= 6) {
+                var prefix = isEven ? 'even' : 'odd';
+                switchTab(prefix);
+                
+                var headerElement = document.getElementById('h-' + prefix + '-' + dayOfWeek);
+                var listElement = document.getElementById(prefix + '-' + dayOfWeek);
+                
+                if(headerElement) {
+                    headerElement.classList.add('today-title');
+                    headerElement.innerHTML += ' • СЕГОДНЯ';
+                }
+                if(listElement) {
+                    listElement.style.border = '1px solid var(--ios-blue)';
+                }
+            }
+        }
+        
+        if(window.Telegram && window.Telegram.WebApp) {
             window.Telegram.WebApp.ready();
             window.Telegram.WebApp.expand();
         }
-        initGroups();
+        highlightToday();
     </script>
 </body>
 </html>
