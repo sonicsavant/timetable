@@ -34,6 +34,7 @@
             color: var(--ios-text);
             margin: 0;
             padding: 16px;
+            padding-bottom: 90px;
             user-select: none;
             -webkit-font-smoothing: antialiased;
         }
@@ -41,12 +42,12 @@
         .screen { display: none; }
         .screen.active { display: block; }
 
-        .header { text-align: center; margin: 40px 0 30px 0; }
+        .header { text-align: center; margin: 30px 0; }
         .logo-placeholder {
-            width: 80px; height: 80px; background: #107c41; border-radius: 22px;
-            margin: 0 auto 16px auto; display: flex; align-items: center; justify-content: center;
-            color: white; font-weight: 700; font-size: 14px; text-align: center;
-            box-shadow: 0 8px 24px rgba(16, 124, 65, 0.2);
+            width: 70px; height: 70px; background: #107c41; border-radius: 18px;
+            margin: 0 auto 12px auto; display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: 700; font-size: 13px; text-align: center;
+            box-shadow: 0 8px 24px rgba(16, 124, 65, 0.15);
         }
         .title { font-size: 24px; font-weight: 700; margin: 0 0 4px 0; }
         .subtitle { font-size: 14px; color: var(--ios-secondary-text); margin: 0; }
@@ -85,7 +86,21 @@
         }
         .tabs { display: flex; background: rgba(120, 120, 128, 0.12); padding: 2px; border-radius: 99px; }
         .tab { flex: 1; text-align: center; padding: 8px 4px; font-size: 13px; font-weight: 500; border-radius: 99px; cursor: pointer; color: var(--ios-text); }
-        .tab:active { background: var(--ios-card); box-shadow: 0 3px 8px rgba(0,0,0,0.12); font-weight: 600; }
+        .tab.active { background: var(--ios-card); box-shadow: 0 3px 8px rgba(0,0,0,0.12); font-weight: 600; }
+
+        /* Стильные iOS карточки предметов */
+        .schedule-item { display: flex; align-items: center; padding: 14px 16px; position: relative; }
+        .schedule-item:not(:last-child)::after {
+            content: ''; position: absolute; bottom: 0; right: 0; left: 62px; height: 0.5px; background: var(--ios-border);
+        }
+        
+        .item-icon {
+            width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: 700; font-size: 11px; margin-right: 14px; flex-shrink: 0;
+        }
+        .item-info { flex-grow: 1; display: flex; flex-direction: column; }
+        .item-title { font-size: 16px; font-weight: 500; margin-bottom: 2px; line-height: 1.3; }
+        .item-meta { font-size: 13px; color: var(--ios-secondary-text); line-height: 1.2; }
 
         .back-button {
             color: var(--ios-blue); font-size: 17px; display: flex; align-items: center; gap: 4px;
@@ -124,10 +139,7 @@
         .alert-btn.bold { font-weight: 600; }
         .alert-btn.cancel { color: #ff3b30; border-right: 0.5px solid var(--ios-border); }
         
-        .info-notice {
-            padding: 25px 20px; text-align: center; color: var(--ios-text); font-size: 16px; line-height: 1.5;
-        }
-        .info-notice span { display: block; font-size: 28px; margin-bottom: 10px; }
+        .center-notice { padding: 40px 20px; text-align: center; color: var(--ios-secondary-text); font-size: 15px; }
     </style>
 </head>
 <body>
@@ -143,7 +155,7 @@
     </div>
 
     <div id="screen-groups" class="screen">
-        <button class="back-button" onclick="navigateTo('screen-role')"><i>◀</i> Назад</button>
+        <button class="back-button" onclick="navigateTo('screen-role')">◀ Назад</button>
         <div class="search-container">
             <span class="search-icon">🔍</span>
             <input type="text" class="search-input" id="search" placeholder="Поиск группы (например: ЭПСл)" oninput="filterGroups()">
@@ -152,24 +164,19 @@
     </div>
 
     <div id="screen-timetable" class="screen">
-        <button class="back-button" onclick="navigateTo('screen-groups')"><i>◀</i> Группы</button>
+        <button class="back-button" onclick="navigateTo('screen-groups')">◀ Группы</button>
         <h2 class="title" id="current-group-title" style="margin-bottom: 2px;">Группа</h2>
-        <p class="subtitle" style="margin-bottom: 20px;">Кликните нужный день:</p>
+        <p class="subtitle" id="current-date-subtitle" style="margin-bottom: 20px;">Среда, 24 июня</p>
 
         <div class="tabs-container">
             <div class="tabs">
-                <div class="tab" id="btn-yesterday" onclick="requestSchedule('yesterday', this)">Вчера</div>
-                <div class="tab" id="btn-today" onclick="requestSchedule('today', this)">Сегодня</div>
-                <div class="tab" id="btn-tomorrow" onclick="requestSchedule('tomorrow', this)">Завтра</div>
+                <div class="tab" id="tab-yesterday" onclick="switchDay('yesterday')">Вчера</div>
+                <div class="tab" id="tab-today" onclick="switchDay('today')">Сегодня</div>
+                <div class="tab" id="tab-tomorrow" onclick="switchDay('tomorrow')">Завтра</div>
             </div>
         </div>
 
-        <div class="ios-list">
-            <div class="info-notice" id="status-text">
-                <span>⚡</span>
-                Нажмите кнопку дня выше. Пары прилетят сообщением в чат бота КрИЖТ!
-            </div>
-        </div>
+        <div class="ios-list" id="timetable-container"></div>
 
         <div class="bottom-bar">
             <button class="bar-btn" onclick="openModal('bells-modal')">🔔 Звонки</button>
@@ -194,11 +201,11 @@
         </div>
     </div>
 
-    <div id="support-modal" class="modal-overlay" onclick="closeModal(event, 'support-modal')">
+    <div id="support-modal" class="modal-overlay" onclick="closeMockModal(event, 'support-modal')">
         <div class="ios-alert">
             <div class="alert-body">
                 <h3 class="alert-title">🆘 Поддержка</h3>
-                <textarea id="support-text" class="ios-textarea" placeholder="Введите сообщение старосте..."></textarea>
+                <textarea id="support-text" class="ios-textarea" placeholder="Сообщение старосте..."></textarea>
             </div>
             <div class="alert-buttons">
                 <button class="alert-btn cancel" onclick="document.getElementById('support-modal').style.display='none'">Отмена</button>
@@ -208,7 +215,6 @@
     </div>
 
     <script>
-        // Полный список всех групп КрИЖТ
         const groups = [
             'ЭПСл.9-25-1', 'ATM.9-23-1', 'ATM.9-24-1', 'ATM.9-24-2', 
             'ATM.9-25-1', 'ATM.9-25-2', 'Д.11-24-6', 'Д.11-24-7', 
@@ -217,22 +223,36 @@
             'ЭПСл.9-24-1', 'ЭПСл.9-24-2'
         ];
 
+        // Локальное статичное расписание для демонстрации дизайна
+        const mockData = {
+            yesterday: [
+                { num: "1", name: "Литература", type: "Лекция", teacher: "Буданова Т.Ю.", room: "Л408", color: "#ff9500", short: "ЛИ" },
+                { num: "2", name: "Математика", type: "Практика", teacher: "Чуракова Е.А.", room: "Л203", color: "#34c759", short: "МА" }
+            ],
+            today: [
+                { num: "1", name: "Обществознание", type: "Лекция", teacher: "Ганьба М.А.", room: "Т14", color: "#ff9500", short: "ОБ" },
+                { num: "2", name: "Русский язык", type: "Иное", teacher: "Борисова Л.В.", room: "Л408", color: "#007aff", short: "РЯ" },
+                { num: "3", name: "История", type: "Лекция", teacher: "Марцыфей А.В.", room: "Т11", color: "#ffcc00", short: "ИС" }
+            ],
+            tomorrow: [
+                { num: "1", name: "Физика", type: "Лекция", teacher: "Селина И.В.", room: "Л301", color: "#af52de", short: "ФИ" },
+                { num: "2", name: "ОБЗР", type: "Практика", teacher: "Фомичёв Ю.Г.", room: "Л201", color: "#ff2d55", short: "ОБ" }
+            ]
+        };
+
+        const daysTitles = { yesterday: "Вчера, 23 июня", today: "Сегодня, 24 июня", tomorrow: "Завтра, 25 июня" };
         let selectedGroup = '';
+        let currentDay = 'today';
 
         function navigateTo(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
-            // Сбрасываем старые активные вкладки дней
-            document.querySelectorAll('.tab').forEach(t => t.removeAttribute('style'));
-            document.getElementById('status-text').innerHTML = "<span>⚡</span> Нажмите кнопку дня выше. Пары прилетят сообщением в чат бота КрИЖТ!";
         }
 
         function initGroups() {
-            const container = document.getElementById('groups-container');
-            container.innerHTML = groups.sort().map(g => `
+            document.getElementById('groups-container').innerHTML = groups.sort().map(g => `
                 <div class="ios-item" onclick="selectGroup('${g}')">
-                    <span class="group-name">${g}</span>
-                    <div class="ios-chevron"></div>
+                    <span class="group-name">${g}</span><div class="ios-chevron"></div>
                 </div>
             `).join('');
         }
@@ -240,51 +260,61 @@
         function filterGroups() {
             const query = document.getElementById('search').value.toLowerCase();
             document.querySelectorAll('.ios-item').forEach(item => {
-                const name = item.querySelector('.group-name').textContent.toLowerCase();
-                item.style.display = name.includes(query) ? 'flex' : 'none';
+                item.style.display = item.querySelector('.group-name').textContent.toLowerCase().includes(query) ? 'flex' : 'none';
             });
         }
 
         function selectGroup(groupName) {
             selectedGroup = groupName;
-            document.getElementById('current-group-title').textContent = groupName;
+            document.getElementById('current-group-title').textContent = groupName + "(К,О)";
             navigateTo('screen-timetable');
+            switchDay('today');
         }
 
-        function requestSchedule(day, element) {
-            if(!selectedGroup) return;
-            
-            // Визуально подсвечиваем нажатую кнопку
-            document.querySelectorAll('.tab').forEach(t => t.removeAttribute('style'));
-            element.style.background = "var(--ios-card)";
-            element.style.boxShadow = "0 3px 8px rgba(0,0,0,0.12)";
-            element.style.fontWeight = "600";
+        function switchDay(day) {
+            currentDay = day;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-' + day).classList.add('active');
+            document.getElementById('current-date-subtitle').textContent = daysTitles[day];
+            loadTimetable();
+        }
 
-            document.getElementById('status-text').innerHTML = "<span>⏳</span> Запрос отправлен боту! Проверьте чат с ботом.";
+        function loadTimetable() {
+            const container = document.getElementById('timetable-container');
+            const data = mockData[currentDay];
 
-            if(window.Telegram && window.Telegram.WebApp) {
-                // Передаем правильную строку через двоеточие
-                window.Telegram.WebApp.sendData("GET_SPO_SCHEDULE:" + selectedGroup + ":" + day);
+            if (!data || data.length === 0) {
+                container.innerHTML = `<div class="center-notice">🎉 Выходной день!</div>`;
+                return;
             }
+
+            container.innerHTML = data.map(l => `
+                <div class="schedule-item">
+                    <div class="item-icon" style="background:${l.color}">${l.short}</div>
+                    <div class="item-info">
+                        <span class="item-title">${l.name}</span>
+                        <span class="item-meta">08:00 - 09:30 • ${l.type} • ${l.teacher} • ${l.room}</span>
+                    </div>
+                </div>
+            `).join('');
         }
 
         function openModal(id) { document.getElementById(id).style.display = 'flex'; }
         function closeModal(e, id) { if(e.target === document.getElementById(id)) document.getElementById(id).style.display = 'none'; }
+        function openMockModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeMockModal(e, id) { if(e.target === document.getElementById(id)) document.getElementById(id).style.display = 'none'; }
 
         function sendSupport() {
             var text = document.getElementById('support-text').value.trim();
-            if(!text) return;
-            if(window.Telegram && window.Telegram.WebApp) {
-                window.Telegram.WebApp.sendData("SUPPORT_MSG:" + text);
-                document.getElementById('support-modal').style.display = 'none';
-            }
+            if(!text || !window.Telegram?.WebApp) return;
+            window.Telegram.WebApp.sendData("SUPPORT_MSG:" + text);
+            document.getElementById('support-modal').style.display = 'none';
         }
 
         if (window.Telegram && window.Telegram.WebApp) {
             window.Telegram.WebApp.ready();
             window.Telegram.WebApp.expand();
         }
-
         initGroups();
     </script>
 </body>
